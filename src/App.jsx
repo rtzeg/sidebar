@@ -8,7 +8,7 @@ library.add(fas);
 export default class App extends React.Component {
   render() {
     return (
-      <ThemeWrapper color="dark">
+      <ThemeWrapper color="light">
         <Sidebar />
       </ThemeWrapper>
     )

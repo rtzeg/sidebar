@@ -23,13 +23,14 @@ const bottomRoutes = [
 
 
 const SidebarContainer = styled.div`
-    background-color: ${({ theme }) => theme.sidebarBgDefault};
-    width: 30%;
-    height: 100dvh;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-direction: column;
+  background-color: ${({ theme }) => theme.sidebarBgDefault};
+  width: ${({ $isOpened }) => ($isOpened ? '250px' : '80px')};
+  transition: width 0.3s ease;
+  height: 100dvh;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-direction: column;
 `;
 const SidebarTop = styled.div`
     background-color: ${({ theme }) => theme.sidebarTopBg};
@@ -53,7 +54,7 @@ const SpanLogo = styled.span`
 const Img = styled.img`
     width: 40px;
     height: 40px;
-    margin-right: 10px;
+    margin-right: 30px;
     `;
 const SidebarMiddle = styled.div`
 padding-left: 10px;
@@ -61,35 +62,62 @@ padding-top: 50px;
 margin-bottom: auto;
 width: 100%;
 `;
-const SidebarDivItem = styled.div`
-  width: 90%;
-  display: flex;
-  padding: 10px;
-  border-radius: 10px;
-  background-color: ${({ active, theme }) =>
+const SidebarDivItem = styled.div.withConfig({
+    shouldForwardProp: (prop) => prop !== 'active',
+})`
+    position: relative; 
+    width: 70%;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    font-size: 24px;
+    border-radius: 10px;
+    background-color: ${({ active, theme }) =>
         active ? theme.sidebarBgActive : theme.sidebarBgDefault};
-  transition: 500ms all ease;
-  cursor: pointer;
-
-  span {
-    color: ${({ active, theme }) =>
-        active ? theme.textActive : theme.textDefault};
-    transition: 500ms color ease;
-  }
-
-  svg {
-    color: ${({ active, theme }) =>
-        active ? theme.textActive : theme.textDefault};
-    transition: 500ms color ease;
-  }
-
-  &:hover {
-    background-color: ${({ theme }) => theme.sidebarBgHover};
-
+    transition: 300ms all ease;
+    cursor: pointer;
+  
     span, svg {
-      color: ${({ theme }) => theme.textHover};
+      color: ${({ active, theme }) =>
+        active ? theme.textActive : theme.textDefault};
+      transition: color 300ms ease;
     }
-  }
+  
+    &:hover {
+      background-color: ${({ theme }) => theme.sidebarBgHover};
+  
+      span, svg {
+        color: ${({ theme }) => theme.textHover};
+      }
+  
+      .hover-bubble {
+        opacity: 1;
+      }
+    }
+  `;
+const HoverBubble = styled.span`
+  position: absolute;
+  left: 100%;
+  justify-content: center;
+  display: flex;
+  opacity: 1;
+  font-size: 24px;
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: ${({ theme }) => theme.logoText};
+  color: ${({ theme }) => theme.buttonBgDefault} !important;
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-size: 24px;
+  margin-left: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 10;
 `;
 const Title = styled.span`
     color: ${({ theme }) => theme.textDefault};
@@ -98,15 +126,27 @@ const Title = styled.span`
     transition: 500ms color ease;
 `;
 const StyledIcon = styled(FontAwesomeIcon)`
-    width: 40px;
-    height: 40px;
-    color: ${({ theme }) => theme.textDefault};
-`
+  width: 24px;
+  height: 24px;
+  color: ${({ theme }) => theme.textDefault};
+  transition: color 300ms ease;
+`;
 const SidebarBottom = styled.div`
 padding-left: 10px;
 width: 100%;
 `
-
+const IconWrapper = styled.div`
+  background-color: ${({ theme }) => theme.sidebarIconBg || '#f0f0f0'};
+  padding: 10px;
+  border-radius: 999px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 300ms all ease;
+  &:hover {
+    background-color: ${({ theme }) => theme.sidebarIconHoverBg || '#d4d4d4'};
+  }
+`;
 const Sidebar = (props) => {
     const [isOpened, setIsOpened] = useState(false);
     const containerClassnames = classnames('sidebar', { opened: isOpened });
@@ -121,10 +161,10 @@ const Sidebar = (props) => {
     };
 
     return (
-        <SidebarContainer className={containerClassnames}>
+        <SidebarContainer className={containerClassnames} $isOpened={isOpened}>
             <SidebarTop>
                 <Img src={logo} alt="TensorFlow logo" />
-                <SpanLogo>TensorFlow</SpanLogo>
+                {isOpened && <SpanLogo>TensorFlow</SpanLogo>}
                 <div onClick={toggleSidebar}>
                     <FontAwesomeIcon icon={isOpened ? 'angle-left' : 'angle-right'} />
                 </div>
@@ -134,14 +174,13 @@ const Sidebar = (props) => {
                     routes.map(route => (
                         <SidebarDivItem
                             key={route.title}
-                            onClick={() => {
-                                goToRoute(route.path);
-                                setActiveRoute(route.path);
-                            }}
+                            onClick={() => goToRoute(route.path)}
                             active={activeRoute === route.path}
                         >
                             <StyledIcon icon={route.icon} />
-                            <Title>{route.title}</Title>
+                            {isOpened
+                                ? <Title>{route.title}</Title>
+                                : <HoverBubble className="hover-bubble">{route.title}</HoverBubble>}
                         </SidebarDivItem>
                     ))
                 }
@@ -151,14 +190,13 @@ const Sidebar = (props) => {
                     bottomRoutes.map(route => (
                         <SidebarDivItem
                             key={route.title}
-                            onClick={() => {
-                                goToRoute(route.path);
-                                setActiveRoute(route.path);
-                            }}
+                            onClick={() => goToRoute(route.path)}
                             active={activeRoute === route.path}
                         >
                             <StyledIcon icon={route.icon} />
-                            <Title>{route.title}</Title>
+                            {isOpened
+                                ? <Title>{route.title}</Title>
+                                : <HoverBubble className="hover-bubble">{route.title}</HoverBubble>}
                         </SidebarDivItem>
                     ))
                 }
