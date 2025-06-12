@@ -33,6 +33,8 @@ const SidebarContainer = styled.div`
   flex-direction: column;
 `;
 const SidebarTop = styled.div`
+    position: relative;
+    overflow: ${({ $isOpened }) => ($isOpened ? 'hidden' : 'none')};;
     background-color: ${({ theme }) => theme.sidebarTopBg};
     display: flex;
     justify-content: space-evenly;
@@ -135,17 +137,30 @@ const SidebarBottom = styled.div`
 padding-left: 10px;
 width: 100%;
 `
-const IconWrapper = styled.div`
-  background-color: ${({ theme }) => theme.sidebarIconBg || '#f0f0f0'};
-  padding: 10px;
+const ToggleButton = styled.div`
+  width: 36px;
+  height: 36px;
+  background-color: ${({ theme, $isOpened }) =>
+        $isOpened ? theme.buttonBgDefault : theme.buttonBgActive};
   border-radius: 999px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  transition: 300ms all ease;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  position: absolute;
+  right: -20%;
   &:hover {
-    background-color: ${({ theme }) => theme.sidebarIconHoverBg || '#d4d4d4'};
+    background-color: ${({ theme }) => theme.buttonBgActive || '#c0c0c0'};
   }
+`;
+const ToggleArrow = styled(FontAwesomeIcon)`
+  font-size: 20px;
+  transition: transform 0.3s ease;
+  transform: ${({ $isOpened }) => ($isOpened ? 'rotate(180deg)' : 'rotate(0deg)')};
+  color: ${({ theme }) => theme.textDefault};
 `;
 const Sidebar = (props) => {
     const [isOpened, setIsOpened] = useState(false);
@@ -165,9 +180,9 @@ const Sidebar = (props) => {
             <SidebarTop>
                 <Img src={logo} alt="TensorFlow logo" />
                 {isOpened && <SpanLogo>TensorFlow</SpanLogo>}
-                <div onClick={toggleSidebar}>
-                    <FontAwesomeIcon icon={isOpened ? 'angle-left' : 'angle-right'} />
-                </div>
+                <ToggleButton $isOpened={isOpened} onClick={toggleSidebar}>
+                    <ToggleArrow icon="angle-left" $isOpened={isOpened} />
+                </ToggleButton>
             </SidebarTop>
             <SidebarMiddle>
                 {
